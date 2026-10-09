@@ -14,22 +14,22 @@ import { HarmonyMode } from '../core/engine/harmonies';
 import { deriveDesignSystem } from '../core/engine/derivation';
 import { broadcastStudioState, readPersistedStudioState } from './crossTabSync';
 import { encodeStateToHash, decodeStateFromHash } from './urlSync';
-import { PRESETS, PresetTheme } from '../core/presets/presets';
+import { PRESETS, PresetTheme, TAILWIND_OCHRE_SCALES } from '../core/presets/presets';
 
 export const DEFAULT_STUDIO_STATE: StudioState = {
-  h: 245,
-  s: 78,
-  l: 55,
+  h: 45,
+  s: 100,
+  l: 27,
   theme: 'light',
-  harmony: 'analogous',
+  harmony: 'split',
   format: 'hex',
   contrast: 4.5,
   scaleMode: 'oklch',
 
   satBoost: 1.0,
-  accentShift: 0,
-  neutralTint: 10,
-  neutralHue: 0,
+  accentShift: -2,
+  neutralTint: 15,
+  neutralHue: -26,
   semPull: 15,
 
   radius: 1.0,
@@ -45,6 +45,8 @@ export const DEFAULT_STUDIO_STATE: StudioState = {
     semantic: false,
     tokens: false,
   },
+
+  customScales: TAILWIND_OCHRE_SCALES,
 };
 
 interface HistoryEntry {
@@ -173,7 +175,22 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const updateState = useCallback(
     (partial: Partial<StudioState>, label?: string) => {
       setState((prev) => {
-        const next = { ...prev, ...partial };
+        const isSliderChange =
+          !partial.customScales &&
+          ('h' in partial ||
+            's' in partial ||
+            'l' in partial ||
+            'harmony' in partial ||
+            'satBoost' in partial ||
+            'accentShift' in partial ||
+            'neutralTint' in partial ||
+            'neutralHue' in partial);
+
+        const next = {
+          ...prev,
+          ...partial,
+          ...(isSliderChange ? { customScales: undefined } : {}),
+        };
         if (label && !liveOn) {
           if (pushHistoryRef.current) clearTimeout(pushHistoryRef.current);
           pushHistoryRef.current = setTimeout(() => {
@@ -213,7 +230,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }, [updateState]);
 
   const applyPreset = useCallback((preset: PresetTheme) => {
-    updateState(preset.state, `Applied preset: ${preset.name}`);
+    updateState(
+      {
+        customScales: undefined,
+        ...preset.state,
+      },
+      `Applied preset: ${preset.name}`
+    );
   }, [updateState]);
 
   const reset = useCallback(() => {
@@ -226,7 +249,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const regenSection = useCallback(
     (sec: 'primary' | 'accent' | 'neutral' | 'semantic' | 'tokens') => {
       setState((prev) => {
-        const next = { ...prev };
+        const next = { ...prev, customScales: undefined };
         const rnd = (a: number, b: number) => a + Math.random() * (b - a);
         const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -267,7 +290,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const randomize = useCallback((section?: string) => {
     setState((prev) => {
       const L = prev.locks;
-      const next = { ...prev };
+      const next = { ...prev, customScales: undefined };
       const rnd = (a: number, b: number) => a + Math.random() * (b - a);
       const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 

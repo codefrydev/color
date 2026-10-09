@@ -25,7 +25,7 @@ export function exportTokensJson(st: StudioState): string {
     colorTokens[name] = {};
     STOPS.forEach((stop) => {
       colorTokens[name][stop] = {
-        $value: hslToHex(L.scales[k][stop]),
+        $value: st.customScales?.[k]?.[stop] || hslToHex(L.scales[k][stop]),
         $type: 'color',
       };
     });

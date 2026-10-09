@@ -45,6 +45,9 @@ export interface StudioState {
   leading: number; // 1.2 - 1.9
 
   locks: StudioLocks;
+
+  // Custom scale overrides (e.g., curated Tailwind v4 preset or user-defined exact scales)
+  customScales?: Partial<Record<ScaleKey, Record<ColorStop, string>>>;
 }
 
 export interface SemanticValue {

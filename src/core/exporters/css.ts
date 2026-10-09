@@ -26,7 +26,10 @@ export function exportCss(st: StudioState): string {
   (Object.keys(scaleLabels) as ScaleKey[]).forEach((sc) => {
     o += `  /* ${scaleLabels[sc]} Scale */\n`;
     STOPS.forEach((stop) => {
-      o += `  --${sc}-${stop}: ${formatColor(L.scales[sc][stop], f)};\n`;
+      const val = (f === 'hex' && st.customScales?.[sc]?.[stop])
+        ? st.customScales[sc]![stop]
+        : formatColor(L.scales[sc][stop], f);
+      o += `  --${sc}-${stop}: ${val};\n`;
     });
     o += '\n';
   });

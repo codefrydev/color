@@ -1,7 +1,7 @@
 import { StudioState } from '../core/engine/types';
 
 export const CHANNEL_NAME = 'color_studio_sync';
-export const STORAGE_KEY = 'color_live_state';
+export const STORAGE_KEY = 'color_live_state_v3';
 
 let channel: BroadcastChannel | null = null;
 

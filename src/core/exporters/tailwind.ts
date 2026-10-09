@@ -19,7 +19,8 @@ export function exportTailwindV4(st: StudioState): string {
 
   (Object.keys(scaleNames) as ScaleKey[]).forEach((sc) => {
     STOPS.forEach((stop) => {
-      o += `  --${scaleNames[sc]}-${stop}: ${hslToHex(L.scales[sc][stop])};\n`;
+      const hex = st.customScales?.[sc]?.[stop] || hslToHex(L.scales[sc][stop]);
+      o += `  --${scaleNames[sc]}-${stop}: ${hex};\n`;
     });
   });
 
@@ -40,13 +41,13 @@ export function exportTailwindV3(st: StudioState): string {
   const keys: ScaleKey[] = ['p', 'a', 's', 'n'];
   keys.forEach((k, i) => {
     colors[mapNames[i]] = Object.fromEntries(
-      STOPS.map((s) => [s, hslToHex(L.scales[k][s])])
+      STOPS.map((s) => [s, st.customScales?.[k]?.[s] || hslToHex(L.scales[k][s])])
     );
   });
 
   SEM_KEYS.forEach((k) => {
     colors[k] = Object.fromEntries(
-      STOPS.map((s) => [s, hslToHex(L.scales[k][s])])
+      STOPS.map((s) => [s, st.customScales?.[k]?.[s] || hslToHex(L.scales[k][s])])
     );
   });
 

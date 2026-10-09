@@ -3,6 +3,7 @@ import {
   clamp,
   mod,
   hslToHex,
+  hexToHsl,
   hslToRgb,
   rgbToLab,
   formatColor,
@@ -118,6 +119,21 @@ export function deriveDesignSystem(
       st.scaleMode
     );
   });
+
+  // Apply custom scale overrides if present
+  if (st.customScales) {
+    (Object.keys(st.customScales) as ScaleKey[]).forEach((sc) => {
+      const stops = st.customScales![sc];
+      if (stops) {
+        if (!scales[sc]) scales[sc] = {} as ColorScale;
+        STOPS.forEach((stop) => {
+          if (stops[stop]) {
+            scales[sc][stop] = hexToHsl(stops[stop]);
+          }
+        });
+      }
+    });
+  }
 
   // Assign semantic roles
   const N = scales.n;
@@ -345,7 +361,11 @@ export function deriveDesignSystem(
   const vars: Record<string, string> = {};
   (Object.keys(scales) as ScaleKey[]).forEach((sc) => {
     STOPS.forEach((stop) => {
-      vars[`--${sc}-${stop}`] = `hsl(${scales[sc][stop].h.toFixed(1)} ${scales[sc][stop].s.toFixed(1)}% ${scales[sc][stop].l.toFixed(1)}%)`;
+      if (st.customScales && st.customScales[sc] && st.customScales[sc]![stop]) {
+        vars[`--${sc}-${stop}`] = st.customScales[sc]![stop];
+      } else {
+        vars[`--${sc}-${stop}`] = `hsl(${scales[sc][stop].h.toFixed(1)} ${scales[sc][stop].s.toFixed(1)}% ${scales[sc][stop].l.toFixed(1)}%)`;
+      }
     });
   });
 
@@ -355,7 +375,7 @@ export function deriveDesignSystem(
   Object.assign(vars, tokens);
 
   const meta: DerivedSystemMeta = {
-    hex: hslToHex(base),
+    hex: st.customScales?.p?.[500] || hslToHex(base),
     rgb: baseRgb,
     base,
     lab: rgbToLab(baseRgb),
